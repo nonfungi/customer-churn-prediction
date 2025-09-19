@@ -1,6 +1,17 @@
 # Customer Churn Prediction with a Focus on Data Preprocessing
 
-This project is an end-to-end machine learning pipeline focused on predicting customer churn for a telecommunications company. A significant emphasis is placed on the crucial stages of **data cleaning**, **exploratory data analysis (EDA)**, **feature preprocessing**, and **model interpretation**. The goal is to build a reliable classification model and, more importantly, to understand the key drivers behind customer churn.
+This project is an end-to-end machine learning pipeline focused on predicting customer churn for a telecommunications company. A significant emphasis is placed on the crucial stages of **data cleaning**, **exploratory data analysis (EDA)**, **feature preprocessing**, and **model comparison**. The goal is to build a reliable classification model and understand the key drivers behind customer churn.
+
+---
+
+## 🏆 Final Results and Conclusion
+
+The final selected model for this project is the **`LogisticRegression` model**.
+
+This project serves as a practical example of the principle that model complexity does not guarantee better performance. While a more advanced `RandomForestClassifier` was also trained, the simpler, more interpretable baseline model proved to be more effective for the specific business goal of minimizing missed churners (False Negatives).
+
+* **Winning Model Accuracy:** ~81.6%
+* **Key Business Insights:** The model interpretation revealed that key drivers of churn include having a **month-to-month contract**, **fiber optic internet service**, and using **electronic check payments**. Conversely, factors like **long tenure** and subscribing to services like **tech support** and **online security** are strong indicators of customer loyalty.
 
 ---
 
@@ -11,49 +22,31 @@ The project follows a structured workflow, with each phase documented in the `no
 ### 1. Exploratory Data Analysis (EDA)
 *(See `notebooks/01-eda.ipynb`)*
 
-* **Initial Analysis:** The dataset was loaded and examined using `pandas`. Initial checks with `.info()`, `.describe()`, and `.isnull().sum()` were performed to understand the data's structure, types, and basic statistics.
-* **Key Finding:** A critical discovery was that the `TotalCharges` column, which should be numerical, was an `object` data type. This was due to hidden empty strings for customers with zero tenure, which were not caught by `.isnull()`.
-
----
+The dataset was loaded and examined to understand its structure, types, and basic statistics. A critical discovery was that the `TotalCharges` column was an `object` data type due to hidden empty strings, which were not caught by standard null checks.
 
 ### 2. Data Cleaning and Preprocessing
 *(See `notebooks/02-data-preprocessing.ipynb`)*
 
-This phase involved a series of transformations to prepare the raw data for machine learning models.
+* **Handling Missing Values:** Empty strings in `TotalCharges` were converted to `NaN` and then imputed using the column's **median**.
+* **Encoding Categorical Features:** All text-based features were converted to a numerical format.
+    * **Label Encoding:** Binary features ('Yes'/'No') were mapped to `1`/`0`.
+    * **One-Hot Encoding:** Multi-class features (e.g., `Contract`) were converted into binary columns using `pd.get_dummies()` to prevent the model from assuming a false ordinal relationship.
 
-* **Handling Missing Values:**
-    * The empty strings in `TotalCharges` were converted to `NaN` (Not a Number) using `pd.to_numeric` with `errors='coerce'`.
-    * These `NaN` values (11 in total) were then imputed using the **median** of the column to maintain the data distribution without being skewed by outliers.
-
-* **Encoding Categorical Features:** Machine learning models require numerical input, so all categorical (text-based) features were converted to numbers.
-    * **Label Encoding (for Binary Features):** Columns with two distinct values (e.g., 'Yes'/'No', 'Male'/'Female') were mapped directly to `1` and `0`.
-    * **One-Hot Encoding (for Multi-class Features):** For columns with more than two categories (e.g., `Contract`, `InternetService`), One-Hot Encoding was applied using `pd.get_dummies()`. This technique creates new binary columns for each category to prevent the model from assuming a false ordinal relationship between them. The `drop_first=True` argument was used to avoid multicollinearity.
-
----
-
-### 3. Model Training and Evaluation
+### 3. Model Training and Comparison
 *(See `notebooks/03-model-training-and-evaluation.ipynb`)*
 
-* **Data Splitting:** The fully preprocessed dataset was split into an 80% training set and a 20% testing set using `train_test_split` from Scikit-learn. This ensures the model is evaluated on data it has never seen before.
+* **Data Splitting:** The dataset was split into an 80% training set and a 20% testing set.
 
-* **Baseline Model: Logistic Regression:**
-    * A `LogisticRegression` model was chosen as the initial baseline due to its simplicity and high interpretability.
-    * The model was trained on the training data using the `.fit()` method.
+* **Baseline Model (Logistic Regression):** A `LogisticRegression` model was trained as an interpretable baseline. It achieved an accuracy of **~81.6%**. Its confusion matrix showed it was strong at identifying non-churners but weaker at finding true churners (158 False Negatives).
 
-* **Evaluation:**
-    * The trained model was used to make predictions on the test set.
-    * **Accuracy:** The model achieved an overall accuracy of approximately **81.6%**.
-    * **Confusion Matrix:** A confusion matrix was generated to analyze the model's performance in detail. It revealed that the model is very good at identifying customers who **do not churn** but is weaker at correctly identifying customers who **do churn** (higher number of False Negatives).
+* **Advanced Model (Random Forest):** To improve upon the baseline, a more complex `RandomForestClassifier` was also trained. It achieved an accuracy of **~79.9%**.
 
----
+* **Model Comparison:** A direct comparison revealed a critical insight: despite being a more complex algorithm, the Random Forest model performed worse. It was not only less accurate overall but was also significantly less effective at identifying true churners, resulting in more False Negatives (200 vs. 158).
 
 ### 4. Model Interpretation
 *(See `notebooks/03-model-training-and-evaluation.ipynb`)*
 
-* **Feature Importance:** The coefficients (`model.coef_`) of the trained Logistic Regression model were extracted to understand the importance and influence of each feature.
-    * **Positive Coefficients:** Indicate features that increase the probability of churn (e.g., Month-to-month contracts, Fiber optic internet).
-    * **Negative Coefficients:** Indicate features that decrease the probability of churn, signaling customer loyalty (e.g., long tenure, Two-year contracts).
-* A visualization was created to display the most impactful features, providing valuable business insights into the key drivers of churn.
+Based on the comparison, the **Logistic Regression** model was selected as the final model. Its coefficients (`model.coef_`) were analyzed to understand the key drivers of churn, providing the business insights mentioned in the conclusion.
 
 ---
 
